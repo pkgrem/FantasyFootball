@@ -1,5 +1,6 @@
+import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 import csv
 
 output_file = csv.writer(open('prem_table_bs.csv', 'w'))
@@ -7,36 +8,42 @@ output_file = csv.writer(open('prem_table_bs.csv', 'w'))
 
 output_file.writerow(['Rk', 'Squad', 'MP', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts', 'xG', 'xGA', 'xGD', 'xGD/90'])
 
-result = requests.get("https://fbref.com/en/comps/9/Premier-League-Stats")
 
-src = result.content
+url = 'https://fbref.com/play-index/share.fcgi?id=ALSaw'
+response = requests.get(url)
 
-soup = BeautifulSoup(src, 'html.parser')
+tables = pd.read_html(response.text, header=0)
 
-#Finds all the tables
-table = soup.find_all("table")
-league_table = table[0]
-teams = league_table.find_all("tr")
+# Get the tables within the Comments
+soup = BeautifulSoup(response.text, 'html.parser')
+comments = soup.find_all(string=lambda text: isinstance(text, Comment))
+for each in comments:
+    if 'table' in str(each):
+        try:
+            table = pd.read_html(str(each), header=1)[-1]
+            table = table[table['Rk'].ne('Rk')].reset_index(drop=True)
+            tables.append(table)
+        except:
+            continue
 
-for team in teams[1:21]:
+for table in tables:
+   # print(table['Rk'])
 
-    stats = team.find_all("td")
 
-    Rk = stats[0].text
-    Squad = stats[2].text
-    MP = stats[3].text
-    W = stats[4].text
-    D = stats[5].text
-    L = stats[6].text
-    GF = stats[7].text
-    GA = stats[8].text
-    GD = stats[9].text
-    Pts = stats[10].text
-    xG = stats[11].text
-    xGA = stats[12].text
-    xGD = stats[13].text
-    xGD90 = stats[14].text
+    Rk = table['Rk']
+    Squad = table['Squad']
+    MP = table['MP']
+    W = table['W']
+    D = table['D']
+    L = table['L']
+    GF = table['GF']
+    GA = table['GA']
+    GD = table['GD']
+    Pts = table['Pts']
+    xG = table['xG']
+    xGA = table['xGA']
+    xGD = table['xGD']
+    xGD90 = table['xGD/90']
+
 
 output_file.writerow([Rk, Squad, MP, W, D, L, GF, GA, GD, Pts, xG, xGA, xGD, xGD90])
-
-
