@@ -6,9 +6,6 @@ import csv
 output_file = csv.writer(open('prem_table_bs.csv', 'w'))
 #w allows python to write to the file
 
-output_file.writerow(['Rk', 'Squad', 'MP', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts', 'xG', 'xGA', 'xGD', 'xGD/90'])
-
-
 url = 'https://fbref.com/play-index/share.fcgi?id=ALSaw'
 response = requests.get(url)
 
@@ -45,5 +42,5 @@ for table in tables:
     xGD = table['xGD']
     xGD90 = table['xGD/90']
 
-
+output_file.writerow(['Rk', 'Squad', 'MP', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts', 'xG', 'xGA', 'xGD', 'xGD/90'])
 output_file.writerow([Rk, Squad, MP, W, D, L, GF, GA, GD, Pts, xG, xGA, xGD, xGD90])
